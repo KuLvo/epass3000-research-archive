@@ -121,13 +121,13 @@ def trusted_host(path, host, port):
     return next(iter(keys.values()))
 
 
-def main():
+def main(argv=None):
     """Authenticate in the console and open a full SSH shell."""
     parser = argparse.ArgumentParser()
     parser.add_argument('host')
     parser.add_argument('port')
     parser.add_argument('user')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     host, port, user = validate_connection(args.host, args.port, args.user)
     base = Path(__file__).parent
     expected = trusted_host(base / 'ssh_known_hosts', host, port)

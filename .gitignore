@@ -4,3 +4,5 @@ __pycache__/
 *.public.pem
 ssh_connection.json
 ssh_known_hosts
+ssh_servers.json
+ssh_servers.tmp
