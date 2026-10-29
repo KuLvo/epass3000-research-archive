@@ -1,5 +1,13 @@
 # ePass3000 文件签名与 SSH 测试
 
+## SSH 中文操作
+
+主界面点击“SSH 登录 / 导出公钥”。先点击“导出 / 复制我的 SSH 公钥”，将完整公钥交给管理员加入目标账户的 `~/.ssh/authorized_keys`。Linux 上该目录通常权限为 700，文件权限为 600，所属用户应为目标用户。
+
+填写服务器地址、端口和用户名，点击连接。首次连接与管理员提供的 SHA256 指纹核对并确认，再输入 USB Key PIN（不是服务器密码）。连接成功后可执行 `whoami`、`ls` 等非交互命令。地址、端口和用户名会记忆，PIN 不保存。
+
+当前不是完整终端，不支持交互式 sudo、vim 等；一次命令不保留 cd 状态，可输入 `cd /path && ls`。公钥只需安装一次；拔出 Key 不会撤销已建立的 SSH 会话，请点击“断开”。主机密钥变化时会拒绝连接，应先联系管理员核实。
+
 双击 `启动工具.cmd`。当前电脑已有 Python、cryptography 和 paramiko。
 迁移机器时安装 Python 3.13，再执行 `python -m pip install -r requirements.txt`，并从原管理工具目录复制 `libusb-1.0.dll` 到此目录。USB 驱动与原工具保持一致。
 

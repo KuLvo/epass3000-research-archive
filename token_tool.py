@@ -156,6 +156,7 @@ class TokenSSHKey(paramiko.PKey):
     def __init__(self, token):
         self.token = token
         self.public = token.public_key()
+        self.public_blob = None
 
     def get_name(self):
         return 'ssh-rsa'

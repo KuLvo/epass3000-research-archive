@@ -8,6 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import padding, utils
 
 from token_tool import Token, file_digest, run_selftest
 from verification import suggested_paths, verify_paths
+from ssh_gui import SSHWindow
 
 
 def with_token(action):
@@ -97,9 +98,10 @@ def selftest():
 if __name__ == '__main__':
     ROOT = tk.Tk()
     ROOT.title('ePass3000 文件签名与 SSH 测试')
-    ROOT.geometry('500x290')
+    ROOT.geometry('560x370')
     tk.Label(ROOT, text='使用现有槽位 1；请先关闭其他密钥管理程序。', pady=15).pack()
     for label, command in [('文件签名', sign_file), ('文件验签（无需 USB Key）', verify_file), ('本地文件与 SSH 签名自检', selftest)]:
         tk.Button(ROOT, text=label, command=command, width=42, pady=8).pack(pady=5)
+    tk.Button(ROOT, text='SSH 登录 / 导出公钥', command=lambda: SSHWindow(ROOT), width=42, pady=8).pack(pady=5)
     tk.Label(ROOT, text='验签公钥请通过可信渠道确认；本工具不提供初始化或擦除。').pack(pady=10)
     ROOT.mainloop()

@@ -2,3 +2,5 @@ __pycache__/
 *.dll
 *.sig
 *.public.pem
+ssh_connection.json
+ssh_known_hosts
