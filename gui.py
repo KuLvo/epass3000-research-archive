@@ -7,6 +7,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, utils
 
 from token_tool import Token, file_digest, run_selftest
+from verification import suggested_paths, verify_paths
 
 
 def with_token(action):
@@ -49,22 +50,39 @@ def sign_file():
 
 
 def verify_file():
-    """Verify with a user-selected trusted public key, without a token."""
-    filename = filedialog.askopenfilename(title='选择原文件')
-    if not filename:
-        return
-    signature = filedialog.askopenfilename(title='选择签名 .sig')
-    if not signature:
-        return
-    public_path = filedialog.askopenfilename(title='选择可信公钥 .pem')
-    if not public_path:
-        return
-    try:
-        public = serialization.load_pem_public_key(Path(public_path).read_bytes())
-        public.verify(Path(signature).read_bytes(), file_digest(filename), padding.PKCS1v15(), utils.Prehashed(hashes.SHA256()))
-        messagebox.showinfo('验签', '验签通过')
-    except Exception as error:
-        messagebox.showerror('验签失败', str(error) or '文件、签名或公钥不匹配')
+    """Show all verification inputs together and discover companion files."""
+    dialog = tk.Toplevel(ROOT)
+    dialog.title('文件验签 — 无需 USB Key')
+    dialog.geometry('760x300')
+    dialog.transient(ROOT)
+    dialog.grab_set()
+    paths = [tk.StringVar(dialog) for _ in range(3)]
+    tk.Label(dialog, text='先选择原文件，自动查找同目录下的 .sig 和 .public.pem。\n三个文件可以分别更换；确认无误后点击“开始验签”。', justify='left').grid(row=0, column=0, columnspan=3, padx=14, pady=14, sticky='w')
+
+    def browse(index):
+        titles = ['选择原文件（例如：报告.pdf）', '选择签名文件（例如：报告.pdf.sig）', '选择可信公钥（例如：报告.pdf.public.pem）']
+        filters = [[('所有文件', '*.*')], [('签名文件', '*.sig'), ('所有文件', '*.*')], [('公钥文件', '*.pem'), ('所有文件', '*.*')]]
+        selected = filedialog.askopenfilename(parent=dialog, title=titles[index], filetypes=filters[index])
+        if selected:
+            paths[index].set(selected)
+            if index == 0:
+                for variable, value in zip(paths[1:], suggested_paths(selected)):
+                    variable.set(value)
+
+    def verify():
+        try:
+            verify_paths(*(variable.get() for variable in paths))
+            messagebox.showinfo('验签通过', '文件与签名匹配，文件未被修改。\n签名者身份取决于你是否信任所选公钥。', parent=dialog)
+        except Exception as error:
+            messagebox.showerror('验签失败', str(error), parent=dialog)
+
+    for index, label in enumerate(['① 原文件', '② 签名文件 .sig', '③ 公钥文件 .pem']):
+        tk.Label(dialog, text=label).grid(row=index + 1, column=0, padx=12, pady=9, sticky='w')
+        tk.Entry(dialog, textvariable=paths[index], width=66).grid(row=index + 1, column=1, sticky='ew')
+        tk.Button(dialog, text='浏览…', command=lambda i=index: browse(i)).grid(row=index + 1, column=2, padx=12)
+    dialog.columnconfigure(1, weight=1)
+    tk.Label(dialog, text='公钥应来自可信渠道。若未自动找到文件，请点击对应行的“浏览…”。').grid(row=4, column=0, columnspan=3, pady=12)
+    tk.Button(dialog, text='开始验签', command=verify, width=22).grid(row=5, column=1)
 
 
 def selftest():
