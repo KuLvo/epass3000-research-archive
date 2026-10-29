@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 import queue
 import threading
+import subprocess
+import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, scrolledtext
 
@@ -38,6 +40,7 @@ class SSHWindow:
         buttons.pack()
         tk.Button(buttons, text='连接（USB Key 认证）', command=self.connect).pack(side='left', padx=8)
         tk.Button(buttons, text='断开', command=self.disconnect).pack(side='left', padx=8)
+        tk.Button(buttons, text='打开完整终端', command=self.open_terminal).pack(side='left', padx=8)
         self.status = tk.StringVar(self.window, value='尚未连接；PIN 不会保存。')
         tk.Label(self.window, textvariable=self.status, wraplength=780).pack(pady=10)
         self.output = scrolledtext.ScrolledText(self.window, height=17, state='disabled')
@@ -167,6 +170,23 @@ class SSHWindow:
         self.output.insert('end', text)
         self.output.see('end')
         self.output.configure(state='disabled')
+
+    def open_terminal(self):
+        """Launch a real VT console without passing the PIN to a subprocess."""
+        if self.busy:
+            return
+        try:
+            from ssh_terminal import trusted_host
+            host, port, user = validate_connection(self.host.get(), self.port.get(), self.user.get())
+            trusted_host(self.trust_path, host, port)
+            python = Path(sys.executable)
+            if python.name.lower() == 'pythonw.exe':
+                python = python.with_name('python.exe')
+            subprocess.Popen([str(python), str(self.base / 'ssh_terminal.py'), host, str(port), user],
+                             cwd=str(self.base), creationflags=subprocess.CREATE_NEW_CONSOLE)
+            self.status.set('已打开独立终端，请在新窗口输入 USB Key PIN。')
+        except Exception as error:
+            messagebox.showerror('无法打开终端', str(error), parent=self.window)
 
     def execute(self):
         """Execute one bounded non-interactive remote command."""
