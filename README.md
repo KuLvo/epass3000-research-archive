@@ -1,3 +1,5 @@
+归档状态：停止继续研究；实验代码。请先阅读 [研究存档](docs/研究存档.md)，其中明确区分实机验证、自动测试和未完成事项。
+
 # ePass3000 文件签名与 SSH 测试
 
 ## 推荐：SSH 命令行菜单
@@ -57,3 +59,4 @@ python token_tool.py ssh SERVER USER --port 22 --known-hosts PATH_TO_KNOWN_HOSTS
 初始化工具预置的 PIN、PUK、维护密钥仍应在正式使用前更换；本工具不修改这些内容，也不初始化或生成密钥。
 
 卡片 APDU / R6 协议参考 https://github.com/nickfox-taterli/ePass3000 ，实现为独立 Python 工具；SDK 解包检查后未安装旧中间件。
+
